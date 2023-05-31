@@ -1,11 +1,12 @@
 from cryptography.fernet import Fernet
 import sys
-# import os
+import os
 import subprocess
+import shutil
 
 USAGE = \
     """
-    crypter.py -- <option> <value>
+    python crypter.py --<option> <value>
 
     OPTIONS:
         -f, --file <VALUE> = "define witch file must be cryptographyed"
@@ -18,6 +19,7 @@ USAGE = \
 def crypter(input_file, output_file):
     with open(input_file, 'rb') as file:
         content = file.read()
+
     key = Fernet.generate_key()
     fernet = Fernet(key)
     crypto_content = fernet.encrypt(content)
@@ -43,8 +45,13 @@ os.remove('decrypt.exe')
 """
     with open('crypto.py', 'w') as file:
         file.write(code)
-        
-    subprocess.call(('pyinstaller', '--onefile', '-w', '--name', f'{output_file}', 'crypto.py'))
+
+    subprocess.run(('pyinstaller', '--onefile', '-w', '--name', f'{output_file}', 'crypto.py'))
+    shutil.copyfile(f'dist/{output_file}.exe', f'{output_file}.exe')
+    shutil.rmtree('build')
+    shutil.rmtree('dist')
+    os.remove(f'{output_file}.spec')
+    os.remove('crypto.py')
 
 
 def main(*args):
